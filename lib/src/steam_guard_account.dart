@@ -4,12 +4,14 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
+import 'package:http/http.dart' as http;
 
 import 'confirmation.dart';
 import 'session_data.dart';
 import 'api_endpoints.dart';
 import 'steam_web.dart';
 import 'time_aligner.dart';
+import 'util.dart';
 
 class SteamGuardAccount {
   late String sharedSecret;
@@ -277,5 +279,131 @@ class SteamGuardAccount {
     } catch (e) {
       return false;
     }
+  }
+
+  Future<ConfirmationDetails?> getConfirmationDetails(
+    Confirmation confirmation,
+  ) async {
+    String url =
+        "${ApiEndpoints.communityBase}/mobileconf/details/${confirmation.id}?";
+    String queryString = generateConfirmationQueryParams("details");
+    url += queryString;
+
+    Map<String, String> cookies = {};
+    session.addCookies(cookies);
+    String referer = generateConfirmationURL();
+
+    String response = await SteamWeb.request(
+      url: url,
+      method: "GET",
+      cookies: cookies,
+      headers: {},
+      body: {},
+      referer: referer,
+    );
+
+    if (response.isEmpty) return null;
+
+    var confResponse = jsonDecode(response);
+    if (confResponse == null ||
+        confResponse["success"] == null ||
+        !confResponse["success"]) {
+      return null;
+    }
+
+    return ConfirmationDetails(
+      success: confResponse["success"],
+      html: confResponse["html"],
+    );
+  }
+
+  Future<bool> acceptMultipleConfirmations(List<Confirmation> confs) async {
+    return await sendMultiConfirmationAjax(confs, "allow");
+  }
+
+  Future<bool> denyMultipleConfirmations(List<Confirmation> confs) async {
+    return await sendMultiConfirmationAjax(confs, "cancel");
+  }
+
+  Future<bool> acceptConfirmation(Confirmation confirmation) async {
+    return await sendConfirmationAjax(confirmation, "allow");
+  }
+
+  Future<bool> denyConfirmation(Confirmation confirmation) async {
+    return await sendConfirmationAjax(confirmation, "cancel");
+  }
+
+  Future<bool> sendConfirmationAjax(
+    Confirmation conf,
+    String action,
+  ) async {
+    String url = "${ApiEndpoints.communityBase}/mobileconf/multiajax";
+    String queryString = "?op=$action&";
+    queryString += generateConfirmationQueryParams(action);
+    queryString += "&cid=${conf.id}&ck=${conf.key}";
+    url += queryString;
+
+    Map<String, String> cookies = {};
+    session.addCookies(cookies);
+    String referer = generateConfirmationURL();
+
+    String response = await SteamWeb.request(
+      url: url,
+      method: "GET",
+      cookies: cookies,
+      headers: {},
+      body: {},
+      referer: referer,
+    );
+
+    if (response.isEmpty) return false;
+
+    var confResponse = jsonDecode(response);
+    if (confResponse == null ||
+        confResponse["success"] == null ||
+        !confResponse["success"]) {
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<bool> sendMultiConfirmationAjax(
+    List<Confirmation> confs,
+    String action,
+  ) async {
+    String url = "${ApiEndpoints.communityBase}/mobileconf/multiajaxop";
+    String query = "op=$action&${generateConfirmationQueryParams(action)}";
+
+    for (var conf in confs) {
+      query += "&cid[]=${conf.id}&ck[]=${conf.key}";
+    }
+
+    Map<String, String> cookies = {};
+    session.addCookies(cookies);
+    String referer = generateConfirmationURL();
+
+    var response = await http.post(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Referer": referer,
+        "Cookie": Util.stringifyCookies(cookies),
+      },
+      body: query,
+    );
+
+    var responseString = response.body;
+    print("${response.statusCode}, $responseString");
+    if (responseString.isEmpty) return false;
+
+    var confResponse = jsonDecode(responseString);
+    if (confResponse == null ||
+        confResponse["success"] == null ||
+        !confResponse["success"]) {
+      return false;
+    }
+
+    return true;
   }
 }

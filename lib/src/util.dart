@@ -13,4 +13,11 @@ class Util {
     }
     return Uint8List.fromList(ret);
   }
+
+  static BigInt hexStringToBigInt(String hex) {
+    return BigInt.parse(hex, radix: 16);
+  }
+
+  static String stringifyCookies(Map<String, String> cookies) =>
+      cookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
 }
