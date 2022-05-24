@@ -2,8 +2,8 @@ library steam_auth;
 
 import 'dart:convert';
 
-import 'package:steam_auth/api_endpoints.dart';
-import 'package:steam_auth/time_aligner.dart';
+import 'api_endpoints.dart';
+import 'time_aligner.dart';
 
 import 'steam_web.dart';
 
@@ -21,6 +21,8 @@ class UserLogin {
   String emailCode = "";
 
   late bool requires2FA;
+  String twoFactorCode = "";
+
   bool loggedIn = false;
 
   Map<String, String> cookies = {};
@@ -81,6 +83,10 @@ class UserLogin {
     // TODO: Finish login
 
     return LoginResult.loginOkay;
+  }
+
+  String getCaptchaUrl() {
+    return "${ApiEndpoints.communityBase}/public/captcha.php?gid=$captchaGid";
   }
 }
 

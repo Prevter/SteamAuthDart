@@ -2,7 +2,7 @@ library steam_auth;
 
 import 'package:requests/requests.dart';
 import 'package:requests/src/cookie.dart';
-import 'package:steam_auth/api_endpoints.dart';
+import 'api_endpoints.dart';
 
 class SteamWeb {
   static Future<String> mobileLoginRequest({

@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
-import 'package:steam_auth/confirmation.dart';
 
+import 'confirmation.dart';
 import 'session_data.dart';
 import 'api_endpoints.dart';
 import 'steam_web.dart';
