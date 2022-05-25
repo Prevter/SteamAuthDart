@@ -4,7 +4,9 @@ import 'package:requests/requests.dart';
 import 'package:requests/src/cookie.dart';
 import 'api_endpoints.dart';
 
+/// Collection of request utilities
 class SteamWeb {
+  /// Preset to make mobile login requests
   static Future<String> mobileLoginRequest({
     required String url,
     required String method,
@@ -23,6 +25,7 @@ class SteamWeb {
     );
   }
 
+  /// Sends request with correct cookies and headers
   static Future<String> request({
     required String url,
     required String method,
