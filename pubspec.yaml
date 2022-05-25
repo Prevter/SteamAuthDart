@@ -1,19 +1,21 @@
 name: steam_auth
 description: Port of a C# library to work with Steam Mobile Authenticator
-version: 0.0.1
-homepage:
+version: 1.0.0
+homepage: https://github.com/Prevter/SteamAuthDart
+repository: https://github.com/Prevter/SteamAuthDart
 
 environment:
   sdk: ">=2.17.0 <3.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
-  crypto: ^3.0.2
   flutter:
     sdk: flutter
+  crypto: ^3.0.2
   requests: ^4.3.0
   pointycastle: ^3.6.0
   uuid: ^3.0.6
+  http: ^0.13.4
 
 dev_dependencies:
   flutter_test:

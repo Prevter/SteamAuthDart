@@ -1,2 +1,2 @@
-## 0.0.1
-* Initial commit
+## 1.0.0
+* First version
