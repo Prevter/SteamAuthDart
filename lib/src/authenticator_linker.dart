@@ -1,13 +1,11 @@
 library steam_auth;
 
 import 'dart:convert';
-
-import 'package:steam_auth/src/api_endpoints.dart';
-import 'package:steam_auth/src/session_data.dart';
-import 'package:steam_auth/src/steam_web.dart';
-import 'package:steam_auth/steam_auth.dart';
 import 'package:uuid/uuid.dart';
 
+import 'api_endpoints.dart';
+import 'session_data.dart';
+import 'steam_web.dart';
 import 'steam_guard_account.dart';
 
 /// Handles the linking process for a new mobile authenticator.
@@ -40,6 +38,7 @@ class AuthenticatorLinker {
     session.addCookies(cookies);
   }
 
+  /// Begins process of adding new Steam Guard
   Future<LinkResult> addAuthenticator() async {
     bool hasPhone = await hasPhoneAttached();
     if (hasPhone && phoneNumber != null) {
@@ -101,7 +100,10 @@ class AuthenticatorLinker {
 
     return LinkResult.awaitingFinalization;
   }
-
+  
+  /// Finishes account initialization
+  ///
+  /// After success, you should save `linkedAccount`
   Future<FinalizeResult> finilizeAddAuthenticator(String smsCode) async {
     if (phoneNumber != null && !await checkSMSCode(smsCode)) {
       return FinalizeResult.badSMScode;
@@ -159,6 +161,7 @@ class AuthenticatorLinker {
     return FinalizeResult.generalFailure;
   }
 
+  /// Sends SMS code back to Steam to finish adding phone number.
   Future<bool> checkSMSCode(String smsCode) async {
     var postData = {
       'op': 'check_sms_code',
@@ -213,6 +216,7 @@ class AuthenticatorLinker {
     return true;
   }
 
+  /// Tries to attach phone number to account
   Future<bool> addPhoneNumber() async {
     var postData = {
       'op': 'add_phone_number',
@@ -237,7 +241,8 @@ class AuthenticatorLinker {
 
     return true;
   }
-
+  
+  /// Checks whether account have attached phone
   Future<bool> hasPhoneAttached() async {
     var postData = {
       'op': 'has_phone',
@@ -259,6 +264,7 @@ class AuthenticatorLinker {
     return hasPhoneResponse['has_phone'];
   }
 
+  /// Returns new device id
   static String generateDeviceId() {
     return "android:${const Uuid().v4()}";
   }
