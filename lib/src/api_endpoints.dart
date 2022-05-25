@@ -1,5 +1,6 @@
 library steam_auth;
 
+/// API links collection
 class ApiEndpoints {
   static const String steamApiBase = "https://api.steampowered.com";
   static const String communityBase = "https://steamcommunity.com";
