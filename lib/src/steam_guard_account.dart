@@ -406,4 +406,21 @@ class SteamGuardAccount {
 
     return true;
   }
+
+  static SteamGuardAccount fromJson(json) {
+    return SteamGuardAccount(
+      sharedSecret: json["shared_secret"],
+      serialNumber: json["serial_number"],
+      revocationCode: json["revocation_code"],
+      uri: json["uri"],
+      serverTime: json["server_time"],
+      accountName: json["account_name"],
+      tokenGid: json["token_gid"],
+      identitySecret: json["identity_secret"],
+      secret1: json["secret_1"],
+      status: json["status"],
+      deviceId: json["device_id"],
+      fullyEnrolled: json["fully_enrolled"],
+    );
+  }
 }
