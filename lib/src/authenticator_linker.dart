@@ -7,6 +7,7 @@ import 'api_endpoints.dart';
 import 'session_data.dart';
 import 'steam_web.dart';
 import 'steam_guard_account.dart';
+import 'time_aligner.dart';
 
 /// Handles the linking process for a new mobile authenticator.
 class AuthenticatorLinker {
