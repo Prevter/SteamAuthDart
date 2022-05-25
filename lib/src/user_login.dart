@@ -1,11 +1,8 @@
 library steam_auth;
 
-import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:pointycastle/asymmetric/rsa.dart';
 import 'package:pointycastle/export.dart';
-import 'package:pointycastle/pointycastle.dart';
 import 'package:steam_auth/src/session_data.dart';
 import 'dart:convert';
 
