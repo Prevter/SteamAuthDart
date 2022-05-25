@@ -1,6 +1,7 @@
 ![pub](https://img.shields.io/pub/v/steam_auth)
 ![likes](https://img.shields.io/pub/likes/steam_auth)
 [![wakatime](https://wakatime.com/badge/user/77ac138e-44ed-491a-94ce-abc737d53369/project/03adccfd-b780-4cc7-bc2b-b6dec4134a45.svg)](https://wakatime.com/badge/user/77ac138e-44ed-491a-94ce-abc737d53369/project/03adccfd-b780-4cc7-bc2b-b6dec4134a45)
+[![Dart](https://github.com/Prevter/SteamAuthDart/actions/workflows/dart.yml/badge.svg)](https://github.com/Prevter/SteamAuthDart/actions/workflows/dart.yml)
 
 Unofficial port of a C# library to manage mobile Steam Guard and trades. 
 
