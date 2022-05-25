@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+library steam_auth;
 
 class Util {
   /// Returns timestamp in milliseconds
