@@ -1,5 +1,9 @@
 library steam_auth;
 
+/// Contains current session data
+///
+/// Primarely used internally, but you should save it to
+/// not login everytime
 class SessionData {
   late String sessionId;
   late String steamLogin;
@@ -16,6 +20,7 @@ class SessionData {
       required this.oAuthToken,
       required this.steamId});
 
+  /// Sets cookies map from session data
   void addCookies(Map<String, String> cookies) {
     cookies.addAll({
       'mobileClientVersion': '0 (2.1.3)',
