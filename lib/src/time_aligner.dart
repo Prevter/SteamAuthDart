@@ -5,17 +5,14 @@ import 'package:requests/requests.dart';
 import 'api_endpoints.dart';
 import 'util.dart';
 
+/// Alignes time with Steam servers
 class TimeAligner {
   static bool aligned = false;
   static int timeDifference = 0;
 
-  static Future<int> getSteamTimeAsync() async {
-    if (!aligned) {
-      await alignTimeAsync();
-    }
-    return Util.getSystemUnixTime() + timeDifference;
-  }
-
+  /// Sets up alignment
+  ///
+  /// Should be called once in the beginning
   static Future<void> alignTimeAsync() async {
     int currentTime = Util.getSystemUnixTime();
     try {
@@ -36,6 +33,7 @@ class TimeAligner {
     }
   }
 
+  /// Returns aligned timestamp
   static int getSteamTime() {
     return Util.getSystemUnixTime() + timeDifference;
   }
