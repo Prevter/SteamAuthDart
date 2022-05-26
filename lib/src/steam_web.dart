@@ -1,7 +1,9 @@
 library steam_auth;
 
-import 'package:requests/requests.dart';
-import 'package:requests/src/cookie.dart';
+import 'package:dio/dio.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:cookie_jar/cookie_jar.dart';
+
 import 'api_endpoints.dart';
 
 /// Collection of request utilities
@@ -11,7 +13,7 @@ class SteamWeb {
     required String url,
     required String method,
     required Map<String, String> body,
-    required Map<String, String> cookies,
+    required CookieJar? cookies,
     required Map<String, String> headers,
   }) async {
     return await request(
@@ -25,55 +27,81 @@ class SteamWeb {
     );
   }
 
-  /// Sends request with correct cookies and headers
   static Future<String> request({
     required String url,
     required String method,
     required Map<String, String> body,
-    required Map<String, String> cookies,
+    required CookieJar? cookies,
     required Map<String, String> headers,
     String referer = ApiEndpoints.communityBase,
   }) async {
+    String query = "";
+
+    if (body.isNotEmpty) {
+      query = body.entries
+          .map((e) => "${e.key}=${Uri.encodeComponent(e.value)}")
+          .join("&");
+    }
+
+    return await requestStr(
+      url: url,
+      method: method,
+      headers: headers,
+      body: query,
+      cookies: cookies,
+      referer: referer,
+    );
+  }
+
+  /// Sends request with correct cookies and headers
+  static Future<String> requestStr({
+    required String url,
+    required String method,
+    required String body,
+    required CookieJar? cookies,
+    required Map<String, String> headers,
+    String referer = ApiEndpoints.communityBase,
+  }) async {
+    Response response;
+    var dio = Dio();
+
     headers.addAll({
       'Accept': 'text/javascript, text/html, application/xml, text/xml, */*',
       'User-Agent':
           'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Mobile Safari/537.36',
       'Referer': referer,
     });
-    await Requests.clearStoredCookies(Requests.getHostname(url));
-    if (cookies.isNotEmpty) {
-      CookieJar cookieJar = CookieJar();
-      for (var cookie in cookies.entries) {
-        cookieJar[cookie.key] = Cookie(cookie.key, cookie.value);
-      }
-      Requests.setStoredCookies(Requests.getHostname(url), cookieJar);
+
+    if (cookies != null) {
+      dio.interceptors.add(CookieManager(cookies));
     }
 
     if (method == "POST") {
       headers['Content-Type'] =
           'application/x-www-form-urlencoded; charset=UTF-8';
+    } else {
+      url += "?$body";
     }
 
     try {
-      String resultString = "";
-
       if (method == "POST") {
-        var response = await Requests.post(url, body: body, headers: headers);
-        resultString = response.body;
+        response = await dio.postUri(
+          Uri.parse(url),
+          data: body,
+          options: Options(
+            headers: headers,
+          ),
+        );
       } else {
-        var response = await Requests.get(url, headers: headers);
-        resultString = response.body;
+        response = await dio.getUri(
+          Uri.parse(url),
+          options: Options(
+            headers: headers,
+          ),
+        );
       }
-      var cookieJar =
-          await Requests.getStoredCookies(Requests.getHostname(url));
-
-      for (var cookie in cookieJar.values) {
-        cookies[cookie.name] = cookie.value;
-      }
-
-      return resultString;
+      return response.data.toString();
     } catch (e) {
-      print(e);
       return "";
     }
   }

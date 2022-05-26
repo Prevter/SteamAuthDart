@@ -2,6 +2,7 @@ library steam_auth;
 
 import 'dart:convert';
 import 'package:uuid/uuid.dart';
+import 'package:cookie_jar/cookie_jar.dart';
 
 import 'api_endpoints.dart';
 import 'session_data.dart';
@@ -31,7 +32,7 @@ class AuthenticatorLinker {
   bool finalized = false;
 
   SessionData session;
-  Map<String, String> cookies = {};
+  CookieJar cookies = CookieJar();
   bool confirmationEmailSent = false;
 
   AuthenticatorLinker(this.session) {
@@ -75,7 +76,7 @@ class AuthenticatorLinker {
           '${ApiEndpoints.steamApiBase}/ITwoFactorService/AddAuthenticator/v0001',
       method: "POST",
       body: postData,
-      cookies: {},
+      cookies: null,
       headers: {},
     );
 
@@ -101,7 +102,7 @@ class AuthenticatorLinker {
 
     return LinkResult.awaitingFinalization;
   }
-  
+
   /// Finishes account initialization
   ///
   /// After success, you should save `linkedAccount`
@@ -126,7 +127,7 @@ class AuthenticatorLinker {
             '${ApiEndpoints.steamApiBase}/ITwoFactorService/FinalizeAddAuthenticator/v0001',
         method: "POST",
         body: postData,
-        cookies: {},
+        cookies: null,
         headers: {},
       );
 
@@ -242,7 +243,7 @@ class AuthenticatorLinker {
 
     return true;
   }
-  
+
   /// Checks whether account have attached phone
   Future<bool> hasPhoneAttached() async {
     var postData = {

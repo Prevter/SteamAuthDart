@@ -4,44 +4,44 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
-import 'package:http/http.dart' as http;
+import 'package:cookie_jar/cookie_jar.dart';
 
 import 'confirmation.dart';
 import 'session_data.dart';
 import 'api_endpoints.dart';
 import 'steam_web.dart';
 import 'time_aligner.dart';
-import 'util.dart';
 
 class SteamGuardAccount {
-  late String sharedSecret;
-  late String serialNumber;
-  late String revocationCode;
-  late String uri;
-  late String serverTime;
-  late String accountName;
-  late String tokenGid;
-  late String identitySecret;
-  late String secret1;
-  late String status;
-  late String deviceId;
+  String sharedSecret;
+  String? serialNumber;
+  String revocationCode;
+  String? uri;
+  String? serverTime;
+  String? accountName;
+  String? tokenGid;
+  String identitySecret;
+  String? secret1;
+  String? status;
+  String deviceId;
 
-  late bool fullyEnrolled;
-  late SessionData session;
+  /// Set to true if the authenticator has actually been applied to the account.
+  bool fullyEnrolled = false;
+  SessionData? session;
 
   SteamGuardAccount({
     required this.sharedSecret,
-    required this.serialNumber,
-    required this.revocationCode,
-    required this.uri,
-    required this.serverTime,
-    required this.accountName,
-    required this.tokenGid,
     required this.identitySecret,
-    required this.secret1,
-    required this.status,
     required this.deviceId,
-    required this.fullyEnrolled,
+    required this.revocationCode,
+    this.serialNumber = "",
+    this.uri = "",
+    this.serverTime = "",
+    this.accountName = "",
+    this.tokenGid = "",
+    this.secret1 = "",
+    this.status = "",
+    this.fullyEnrolled = false,
   });
 
   static const List<String> steamChars = [
@@ -73,12 +73,19 @@ class SteamGuardAccount {
     "Y"
   ];
 
+  /// Tries to remove Steam Guard from account.
+  ///
+  /// Requires an active [SessionData] present
   Future<bool> deactivateAuthenticator({int scheme = 2}) async {
+    if (session == null) {
+      throw Exception("Session is null");
+    }
+
     var postData = {
-      "steamid": session.steamId.toString(),
+      "steamid": session!.steamId.toString(),
       "steamguard_scheme": scheme.toString(),
       "revocation_code": revocationCode,
-      "access_token": session.oAuthToken
+      "access_token": session!.oAuthToken
     };
 
     try {
@@ -88,7 +95,7 @@ class SteamGuardAccount {
         method: "POST",
         body: postData,
         headers: {},
-        cookies: {},
+        cookies: null,
       );
       var removeResponse = json.decode(response);
       if (response.isNotEmpty && removeResponse["response"]["success"]) {
@@ -100,10 +107,12 @@ class SteamGuardAccount {
     }
   }
 
+  /// Generates a Steam Guard code for this account.
   String generateSteamGuardCode() {
     return generateSteamGuardCodeForTime(TimeAligner.getSteamTime());
   }
 
+  /// Generates a Steam Guard code for a given time.
   String generateSteamGuardCodeForTime(int time) {
     if (sharedSecret.isEmpty) {
       return "";
@@ -137,10 +146,15 @@ class SteamGuardAccount {
     return codeArray.join("");
   }
 
+  /// Returns a list of pending confirmations.
   Future<List<Confirmation>> fetchConfirmations() async {
+    if (session == null) {
+      throw Exception("Session is null");
+    }
+
     String url = generateConfirmationURL();
-    Map<String, String> cookies = {};
-    session.addCookies(cookies);
+    CookieJar cookies = CookieJar();
+    session!.addCookies(cookies);
 
     String response = await SteamWeb.request(
       url: url,
@@ -189,6 +203,9 @@ class SteamGuardAccount {
   }
 
   Map<String, String> generateConfirmationQueryParamsAsNVC(tag) {
+    if (session == null) {
+      throw Exception("Session is null");
+    }
     if (deviceId.isEmpty) {
       throw Exception("Device ID is not present");
     }
@@ -196,7 +213,7 @@ class SteamGuardAccount {
     int time = TimeAligner.getSteamTime();
     return {
       'p': deviceId,
-      'a': session.steamId.toString(),
+      'a': session!.steamId.toString(),
       'k': generateConfirmationHashForTime(time, tag),
       't': time.toString(),
       'm': 'android',
@@ -240,9 +257,13 @@ class SteamGuardAccount {
   }
 
   Future<bool> refreshSession() async {
+    if (session == null) {
+      throw Exception("Session is null");
+    }
+
     String url = ApiEndpoints.mobileAuthGetWgToken;
     var postData = {
-      'access_token': session.oAuthToken,
+      'access_token': session!.oAuthToken,
     };
 
     String response = "";
@@ -252,7 +273,7 @@ class SteamGuardAccount {
         method: "POST",
         body: postData,
         headers: {},
-        cookies: {},
+        cookies: null,
       );
     } catch (e) {
       return false;
@@ -269,12 +290,12 @@ class SteamGuardAccount {
       }
 
       String token =
-          "${session.steamId}%7C%7C${responseJson["response"]["token"]}";
+          "${session!.steamId}%7C%7C${responseJson["response"]["token"]}";
       String tokenSecure =
-          "${session.steamId}%7C%7C${responseJson["response"]["token_secure"]}";
+          "${session!.steamId}%7C%7C${responseJson["response"]["token_secure"]}";
 
-      session.steamLogin = token;
-      session.steamLoginSecure = tokenSecure;
+      session!.steamLogin = token;
+      session!.steamLoginSecure = tokenSecure;
       return true;
     } catch (e) {
       return false;
@@ -284,13 +305,16 @@ class SteamGuardAccount {
   Future<ConfirmationDetails?> getConfirmationDetails(
     Confirmation confirmation,
   ) async {
+    if (session == null) {
+      throw Exception("Session is null");
+    }
     String url =
         "${ApiEndpoints.communityBase}/mobileconf/details/${confirmation.id}?";
     String queryString = generateConfirmationQueryParams("details");
     url += queryString;
 
-    Map<String, String> cookies = {};
-    session.addCookies(cookies);
+    CookieJar cookies = CookieJar();
+    session!.addCookies(cookies);
     String referer = generateConfirmationURL();
 
     String response = await SteamWeb.request(
@@ -337,14 +361,17 @@ class SteamGuardAccount {
     Confirmation conf,
     String action,
   ) async {
+    if (session == null) {
+      throw Exception("Session is null");
+    }
     String url = "${ApiEndpoints.communityBase}/mobileconf/multiajax";
     String queryString = "?op=$action&";
     queryString += generateConfirmationQueryParams(action);
     queryString += "&cid=${conf.id}&ck=${conf.key}";
     url += queryString;
 
-    Map<String, String> cookies = {};
-    session.addCookies(cookies);
+    CookieJar cookies = CookieJar();
+    session!.addCookies(cookies);
     String referer = generateConfirmationURL();
 
     String response = await SteamWeb.request(
@@ -372,6 +399,9 @@ class SteamGuardAccount {
     List<Confirmation> confs,
     String action,
   ) async {
+    if (session == null) {
+      throw Exception("Session is null");
+    }
     String url = "${ApiEndpoints.communityBase}/mobileconf/multiajaxop";
     String query = "op=$action&${generateConfirmationQueryParams(action)}";
 
@@ -379,25 +409,22 @@ class SteamGuardAccount {
       query += "&cid[]=${conf.id}&ck[]=${conf.key}";
     }
 
-    Map<String, String> cookies = {};
-    session.addCookies(cookies);
+    CookieJar cookies = CookieJar();
+    session!.addCookies(cookies);
     String referer = generateConfirmationURL();
 
-    var response = await http.post(
-      Uri.parse(url),
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Referer": referer,
-        "Cookie": Util.stringifyCookies(cookies),
-      },
+    var response = await SteamWeb.requestStr(
+      url: url,
+      method: "POST",
       body: query,
+      cookies: cookies,
+      headers: {},
+      referer: referer,
     );
 
-    var responseString = response.body;
-    print("${response.statusCode}, $responseString");
-    if (responseString.isEmpty) return false;
+    if (response.isEmpty) return false;
 
-    var confResponse = jsonDecode(responseString);
+    var confResponse = jsonDecode(response);
     if (confResponse == null ||
         confResponse["success"] == null ||
         !confResponse["success"]) {
@@ -407,20 +434,44 @@ class SteamGuardAccount {
     return true;
   }
 
-  static SteamGuardAccount fromJson(json) {
-    return SteamGuardAccount(
+  static SteamGuardAccount fromJson(dynamic json) {
+    var account = SteamGuardAccount(
       sharedSecret: json["shared_secret"],
-      serialNumber: json["serial_number"],
+      serialNumber: json["serial_number"] ?? "",
       revocationCode: json["revocation_code"],
-      uri: json["uri"],
-      serverTime: json["server_time"],
-      accountName: json["account_name"],
-      tokenGid: json["token_gid"],
+      uri: json["uri"] ?? "",
+      serverTime: json["server_time"] ?? "",
+      accountName: json["account_name"] ?? "",
+      tokenGid: json["token_gid"] ?? "",
       identitySecret: json["identity_secret"],
-      secret1: json["secret_1"],
-      status: json["status"],
+      secret1: json["secret_1"] ?? "",
+      status: json["status"] ?? "1",
       deviceId: json["device_id"],
-      fullyEnrolled: json["fully_enrolled"],
+      fullyEnrolled: json["fully_enrolled"] ?? false,
     );
+
+    if (json["Session"] != null) {
+      account.session = SessionData.fromJson(json["Session"]);
+    }
+
+    return account;
+  }
+
+  dynamic toJson() {
+    return {
+      "shared_secret": sharedSecret,
+      "serial_number": serialNumber,
+      "revocation_code": revocationCode,
+      "uri": uri,
+      "server_time": serverTime,
+      "account_name": accountName,
+      "token_gid": tokenGid,
+      "identity_secret": identitySecret,
+      "secret_1": secret1,
+      "status": status,
+      "device_id": deviceId,
+      "fully_enrolled": fullyEnrolled,
+      "Session": session?.toJson(),
+    };
   }
 }

@@ -1,6 +1,6 @@
 library steam_auth;
 
-import 'package:requests/requests.dart';
+import 'package:dio/dio.dart';
 
 import 'api_endpoints.dart';
 import 'util.dart';
@@ -14,14 +14,16 @@ class TimeAligner {
   ///
   /// Should be called once in the beginning
   static Future<void> alignTimeAsync() async {
+    var dio = Dio();
+
     int currentTime = Util.getSystemUnixTime();
     try {
-      var response = await Requests.post(
-        ApiEndpoints.twoFactorTimeQuery,
-        body: {'steamid': '0'},
+      var response = await dio.postUri(
+        Uri.parse(ApiEndpoints.twoFactorTimeQuery),
+        data: 'steamid=0',
       );
       if (response.statusCode == 200) {
-        var json = response.json();
+        var json = response.data;
         if (json['response'] != null) {
           int serverTime = int.parse(json['response']['server_time']);
           timeDifference = serverTime - currentTime;

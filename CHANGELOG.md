@@ -1,5 +1,7 @@
 ## 1.0.1
-* Added documentation
+* Changed to using 'dio'
+* Added some documentation
+* Added export to json
 
 ## 1.0.0
 * First version

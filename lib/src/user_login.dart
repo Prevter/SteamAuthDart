@@ -1,9 +1,11 @@
 library steam_auth;
 
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:pointycastle/export.dart';
 import 'package:steam_auth/src/session_data.dart';
+import 'package:cookie_jar/cookie_jar.dart';
 import 'dart:convert';
 
 import 'api_endpoints.dart';
@@ -12,6 +14,9 @@ import 'time_aligner.dart';
 import 'steam_web.dart';
 import 'util.dart';
 
+/// Handles logging the user into the mobile Steam website.
+///
+/// Necessary to generate OAuth token and session cookies.
 class UserLogin {
   String username;
   String password;
@@ -31,19 +36,25 @@ class UserLogin {
   SessionData? session;
   bool loggedIn = false;
 
-  Map<String, String> cookies = {};
+  CookieJar cookies = CookieJar();
 
   UserLogin({required this.username, required this.password});
 
+  /// Makes a request to the Steam login page.
+  ///
+  /// After each try it will return [LoginResult] which will define next actions.
+  ///
+  /// You should call this method several times until it returns [LoginResult.loginOkay].
+  /// (Assuming you fill required data between calls)
   Future<LoginResult> doLogin() async {
     String response = "";
 
-    if (cookies.isEmpty) {
-      cookies.addAll({
-        'mobileClientVersion': '0 (2.1.3)',
-        'mobileClient': 'android',
-        'Steam_Language': 'english',
-      });
+    if ((await cookies.loadForRequest(Uri.parse("https://steamcommunity.com")))
+        .isEmpty) {
+      await cookies.saveFromResponse(Uri.parse("https://steamcommunity.com"), [
+        Cookie('mobileClientVersion', '0 (2.1.3)'),
+        Cookie('mobileClient', 'android'),
+      ]);
 
       await SteamWeb.mobileLoginRequest(
         url:
@@ -170,8 +181,15 @@ class UserLogin {
       return LoginResult.badCredentials;
     } else {
       var oAuthData = jsonDecode(loginResponse['oauth']);
+      var cookiesList = await cookies.loadForRequest(Uri.parse(
+        ApiEndpoints.communityBase,
+      ));
+      var cookiesStringMap = {};
+      for (var cookie in cookiesList) {
+        cookiesStringMap[cookie.name] = cookie.value;
+      }
       session = SessionData(
-        sessionId: cookies["sessionid"]!,
+        sessionId: cookiesStringMap['sessionid'],
         steamLogin: "${oAuthData['steamid']}%7C%7C${oAuthData['wgtoken']}",
         steamLoginSecure:
             "${oAuthData['steamid']}%7C%7C${oAuthData['wgtoken_secure']}",
@@ -184,6 +202,9 @@ class UserLogin {
     }
   }
 
+  /// Builds a URL to captcha which you need to solve.
+  ///
+  /// Call this after getting [LoginResult.needCaptcha] in [doLogin].
   String getCaptchaUrl() {
     return "${ApiEndpoints.communityBase}/public/captcha.php?gid=$captchaGid";
   }
