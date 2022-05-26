@@ -90,6 +90,7 @@ class SteamWeb {
           data: body,
           options: Options(
             headers: headers,
+            responseType: ResponseType.plain,
           ),
         );
       } else {
@@ -97,6 +98,7 @@ class SteamWeb {
           Uri.parse(url),
           options: Options(
             headers: headers,
+            responseType: ResponseType.plain,
           ),
         );
       }

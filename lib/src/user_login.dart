@@ -195,7 +195,7 @@ class UserLogin {
             "${oAuthData['steamid']}%7C%7C${oAuthData['wgtoken_secure']}",
         webCookie: oAuthData['webcookie'],
         oAuthToken: oAuthData['oauth_token'],
-        steamId: oAuthData['steamid'],
+        steamId: int.parse(oAuthData['steamid']),
       );
       loggedIn = true;
       return LoginResult.loginOkay;
