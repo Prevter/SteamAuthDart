@@ -52,7 +52,7 @@ class UserLogin {
     if ((await cookies.loadForRequest(Uri.parse("https://steamcommunity.com")))
         .isEmpty) {
       await cookies.saveFromResponse(Uri.parse("https://steamcommunity.com"), [
-        Cookie('mobileClientVersion', '0 (2.1.3)'),
+        Cookie('mobileClientVersion', '0%20(2.1.3)'),
         Cookie('mobileClient', 'android'),
       ]);
 

@@ -1,3 +1,6 @@
+## 1.0.3
+* Fixed (untested) bug with UserLogin.doLogin(), where Cookie creation throwed an exception
+
 ## 1.0.2
 * Fixed minor errors
 
