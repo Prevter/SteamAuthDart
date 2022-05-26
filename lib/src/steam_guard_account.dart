@@ -17,12 +17,12 @@ class SteamGuardAccount {
   String? serialNumber;
   String revocationCode;
   String? uri;
-  String? serverTime;
+  int? serverTime;
   String? accountName;
   String? tokenGid;
   String identitySecret;
   String? secret1;
-  String? status;
+  int? status;
   String deviceId;
 
   /// Set to true if the authenticator has actually been applied to the account.
@@ -36,11 +36,11 @@ class SteamGuardAccount {
     required this.revocationCode,
     this.serialNumber = "",
     this.uri = "",
-    this.serverTime = "",
+    this.serverTime = 0,
     this.accountName = "",
     this.tokenGid = "",
     this.secret1 = "",
-    this.status = "",
+    this.status = 1,
     this.fullyEnrolled = false,
   });
 
@@ -440,12 +440,12 @@ class SteamGuardAccount {
       serialNumber: json["serial_number"] ?? "",
       revocationCode: json["revocation_code"],
       uri: json["uri"] ?? "",
-      serverTime: json["server_time"] ?? "",
+      serverTime: json["server_time"] ?? 0,
       accountName: json["account_name"] ?? "",
       tokenGid: json["token_gid"] ?? "",
       identitySecret: json["identity_secret"],
       secret1: json["secret_1"] ?? "",
-      status: json["status"] ?? "1",
+      status: json["status"] ?? 1,
       deviceId: json["device_id"],
       fullyEnrolled: json["fully_enrolled"] ?? false,
     );

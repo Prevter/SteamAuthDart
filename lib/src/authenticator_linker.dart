@@ -65,7 +65,7 @@ class AuthenticatorLinker {
 
     var postData = {
       'access_token': session.oAuthToken,
-      'steamid': session.steamId,
+      'steamid': session.steamId.toString(),
       'authenticator_type': '1',
       'device_identifier': deviceId,
       'sms_phone_id': '1',
@@ -112,7 +112,7 @@ class AuthenticatorLinker {
     }
 
     var postData = {
-      'steamid': session.steamId,
+      'steamid': session.steamId.toString(),
       'access_token': session.oAuthToken,
       'activation_code': smsCode,
     };

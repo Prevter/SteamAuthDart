@@ -14,7 +14,7 @@ class SessionData {
   late String steamLoginSecure;
   late String webCookie;
   late String oAuthToken;
-  late String steamId;
+  late int steamId;
 
   SessionData(
       {required this.sessionId,
@@ -31,7 +31,7 @@ class SessionData {
       [
         Cookie('mobileClientVersion', '0 (2.1.3)'),
         Cookie('mobileClient', 'android'),
-        Cookie('steamid', steamId),
+        Cookie('steamid', steamId.toString()),
         Cookie('steamLogin', steamLogin),
         Cookie('steamLoginSecure', steamLoginSecure),
         Cookie('sessionid', sessionId),
