@@ -29,7 +29,7 @@ class SessionData {
     cookies.saveFromResponse(
       Uri.parse("steamcommunity.com"),
       [
-        Cookie('mobileClientVersion', '0 (2.1.3)'),
+        Cookie('mobileClientVersion', '0%20(2.1.3)'),
         Cookie('mobileClient', 'android'),
         Cookie('steamid', steamId.toString()),
         Cookie('steamLogin', steamLogin),

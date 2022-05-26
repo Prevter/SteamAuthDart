@@ -1,3 +1,6 @@
+## 1.0.5
+* Fixed another Cookie issue
+
 ## 1.0.4
 * Fixed bug with SteamWeb that returned json without quotes `"`
 
