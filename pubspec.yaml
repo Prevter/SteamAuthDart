@@ -1,6 +1,6 @@
 name: steam_auth
 description: Port of a C# library to work with Steam Mobile Authenticator
-version: 1.0.6
+version: 1.0.7
 homepage: https://github.com/Prevter/SteamAuthDart
 repository: https://github.com/Prevter/SteamAuthDart
 

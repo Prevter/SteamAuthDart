@@ -370,15 +370,18 @@ class SteamGuardAccount {
     queryString += "&cid=${conf.id}&ck=${conf.key}";
     url += queryString;
 
-    CookieJar cookies = CookieJar();
-    session!.addCookies(cookies);
+    var cookie = "mobileClientVersion=0 (2.1.3); mobileClient=android; "
+        "steamid=${session!.steamId}; "
+        "steamLogin=${session!.steamLogin}; "
+        "steamLoginSecure=${session!.steamLoginSecure}; "
+        "Steam_Language=english; dob=;";
     String referer = generateConfirmationURL();
 
     String response = await SteamWeb.request(
       url: url,
       method: "GET",
-      cookies: cookies,
-      headers: {},
+      cookies: null,
+      headers: {"Cookie": cookie},
       body: {},
       referer: referer,
     );
@@ -409,19 +412,26 @@ class SteamGuardAccount {
       query += "&cid[]=${conf.id}&ck[]=${conf.key}";
     }
 
-    CookieJar cookies = CookieJar();
-    session!.addCookies(cookies);
+    var cookie = "mobileClientVersion=0 (2.1.3); mobileClient=android; "
+        "steamid=${session!.steamId}; "
+        "steamLogin=${session!.steamLogin}; "
+        "steamLoginSecure=${session!.steamLoginSecure}; "
+        "Steam_Language=english; dob=;";
+
+    // CookieJar cookies = CookieJar();
+    // session!.addCookies(cookies);
     String referer = generateConfirmationURL();
 
     var response = await SteamWeb.requestStr(
       url: url,
       method: "POST",
       body: query,
-      cookies: cookies,
-      headers: {},
+      cookies: null,
+      headers: {"Cookie": cookie},
       referer: referer,
     );
 
+    print(response);
     if (response.isEmpty) return false;
 
     var confResponse = jsonDecode(response);
