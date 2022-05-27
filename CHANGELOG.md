@@ -1,3 +1,6 @@
+## 1.0.6
+* Changed `Confirmation` types to [String] (because Dart doesn't have uint64)
+
 ## 1.0.5
 * Fixed another Cookie issue
 

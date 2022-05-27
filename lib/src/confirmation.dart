@@ -1,10 +1,10 @@
 library steam_auth;
 
 class Confirmation {
-  int id;
-  int key;
+  String id;
+  String key;
   int intType;
-  int creator;
+  String creator;
   late ConfirmationType type;
 
   Confirmation(

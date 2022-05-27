@@ -177,10 +177,10 @@ class SteamGuardAccount {
     List<Confirmation> confirmations = [];
     for (Match match in confirmationRegex.allMatches(response)) {
       confirmations.add(Confirmation(
-        id: int.parse(match.group(1)!),
-        key: int.parse(match.group(2)!),
+        id: match.group(1)!,
+        key: match.group(2)!,
         intType: int.parse(match.group(3)!),
-        creator: int.parse(match.group(4)!),
+        creator: match.group(4)!,
       ));
     }
 
